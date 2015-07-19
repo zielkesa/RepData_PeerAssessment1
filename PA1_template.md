@@ -9,7 +9,6 @@ loading required packages: plyr, dplyr, stringr
 library(plyr)
 library(dplyr)
 library(stringr)
-library(ggplot2)
 ```
 
 loading and proccessing data
@@ -86,19 +85,19 @@ activityfilled <- mutate(activityfilled, weekday = as.factor(day))
 
 #making data to plot
 weekend <- filter(activityfilled, weekday == "Weekend")
-weekend <- ddply(weekend, "interval", function(x)mean(x$steps, na.rm=TRUE))
-weekend <- mutate(weekend, day="Weekend")
-weekd <- filter(activityfilled, weekday == "Weekday") 
-weekd <- ddply(weekd, "interval", function(x)mean(x$steps, na.rm=TRUE))
-weekd <- mutate(weekd, day="Weekday")
+weekend <- ddply(activity, "interval", function(x)mean(x$steps, na.rm=TRUE))
+weekend$interval <- as.character(weekend$interval)
+weekend$interval <- str_pad(weekend$interval, 4, side = "left", pad="0")
+weekend$interval <- as.POSIXct(weekend$interval, format="%H%M")
 
-days <- rbind(weekend,weekd)
-names(days) <- c("interval","steps","day")
+weekd <- filter(activityfilled, weekday == "Weekday")
+weekd <- ddply(activity, "interval", function(x)mean(x$steps, na.rm=TRUE))
+weekd$interval <- as.character(weekd$interval)
+weekd$interval <- str_pad(weekd$interval, 4, side = "left", pad="0")
+weekd$interval <- as.POSIXct(weekd$interval, format="%H%M")
 
-days$interval <- as.character(days$interval)
-days$interval <- str_pad(days$interval, 4, side = "left", pad="0")
-days$interval <- as.POSIXct(days$interval, format="%H%M")
-
-p <- ggplot(days, aes(x=interval,y=steps))+facet_grid(day~.)+geom_line()
-plot(p)
+#plotting
+par(mfrow=c(2,1))
+plot(weekend$interval,weekend$V1,type="l",ylab="steps",xlab="time interval",main="Weekend")
+plot(weekd$interval,weekd$V1,type="l",ylab="steps",xlab="time interval",main="Weekday")
 ```
